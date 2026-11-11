@@ -1558,11 +1558,11 @@
 
       <div class="live-board" id="live-board">
         <div class="live-board-heading">
-          <strong id="shuffle-title">Nama peserta bergulir</strong>
+          <strong id="shuffle-title">Peserta bergulir</strong>
           <span class="draw-state" id="draw-state" role="status" aria-live="polite">Siap</span>
         </div>
 
-        <div class="name-reel" id="name-reel" aria-label="Nama peserta yang sedang bergulir">
+        <div class="name-reel" id="name-reel" aria-label="Peserta yang sedang bergulir">
           <div class="name-reel-window">
             <div class="reel-track" id="reel-track" aria-live="off"></div>
           </div>
@@ -2019,7 +2019,7 @@
       errorPanel.hidden = true;
       state.textContent = 'Berputar';
       stageStatus.textContent = 'Undian berlangsung';
-      shuffleTitle.textContent = count === 1 ? 'Mengacak nama peserta' : 'Nama peserta bergulir';
+      shuffleTitle.textContent = count === 1 ? 'Mengacak peserta' : 'Peserta bergulir';
       stepLabel.textContent = 'Semua peserta punya peluang yang sama';
       stepCount.textContent = `0 dari ${count} pemenang`;
       progressBar.setAttribute('aria-valuenow', '0');
@@ -2107,11 +2107,11 @@
           state.textContent = 'Berputar';
           stageStatus.textContent = count === 1 ? 'Memilih satu pemenang' : `Memilih pemenang ${round} dari ${count}`;
           shuffleTitle.textContent = count === 1
-            ? 'Mengacak nama peserta'
+            ? 'Mengacak peserta'
             : `Pemenang ${round} dari ${count}`;
           stepLabel.textContent = 'Semua peserta punya peluang yang sama';
           stepCount.textContent = `${selected.length} dari ${count} pemenang`;
-          progressText.textContent = 'Nama peserta mulai bergulir';
+          progressText.textContent = 'Peserta mulai bergulir';
           const firstRows = Array.from({ length: 5 }, (_, position) => {
             const index = getSecureRandomIndex(remaining.length);
             return { entry: remaining[index], index, offset: position - 2 };
