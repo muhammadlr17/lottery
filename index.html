@@ -1451,6 +1451,85 @@
       .live-board { min-height: clamp(420px, 50vh, 600px); }
       .name-reel { height: auto; min-height: clamp(290px, 36vh, 440px); }
     }
+
+    @media (min-width: 801px) and (min-height: 640px) {
+      .stats { font-size: 0.82rem; }
+      .stat-val { font-size: 1rem; }
+      .panel { gap: 12px; }
+      .panel-title { font-size: 1rem; }
+      .textarea-box { font-size: 0.88rem; }
+      .input-actions button,
+      .file-dropzone { font-size: 0.84rem; }
+      .btn-secondary { font-size: 0.84rem; }
+      .btn-danger { font-size: 0.78rem; }
+      .winner-table { font-size: 0.88rem; }
+      .winner-table th { font-size: 0.8rem; }
+      .btn-draw:disabled {
+        background: #e2e8f0;
+        box-shadow: none;
+        color: #52657e;
+        opacity: 1;
+      }
+    }
+
+    @media (min-width: 1500px) and (min-height: 640px) {
+      header {
+        min-height: 68px;
+        height: 68px;
+        padding-inline: 1.5rem;
+      }
+      .brand-logo { width: 52px; height: 54px; }
+      .brand-name { font-size: 1.1rem; }
+      .stats { font-size: 0.9rem; }
+      .stat-val { font-size: 1.1rem; }
+
+      main {
+        height: calc(100dvh - 68px);
+        grid-template-columns: minmax(0, 1fr) clamp(340px, 22vw, 420px);
+        gap: 18px;
+        padding: 18px 24px;
+      }
+      .stage { gap: 16px; }
+      .stage-heading .eyebrow { font-size: 1rem; }
+      .stage-live { font-size: 0.92rem; }
+      .live-board { gap: 12px; }
+      .live-board-heading strong { font-size: clamp(1.45rem, 1.5vw, 1.8rem); }
+      .draw-state { font-size: 0.9rem; }
+      .reel-item { flex-basis: clamp(68px, 8vh, 104px); }
+      .reel-item.is-center { font-size: clamp(3rem, 3.8vw, 4.7rem); }
+      .shuffle-caption,
+      .progress-caption { font-size: 1rem; }
+      .progress-track { height: 0.75rem; }
+      .winners-stage-grid { max-height: min(20vh, 200px); }
+      .winners-stage-grid .idx { font-size: 0.95rem; }
+      .winners-stage-grid .name { font-size: clamp(1.1rem, 1.2vw, 1.45rem); }
+      .draw-opt {
+        min-height: 60px;
+        padding: 0.65rem 0.9rem;
+        font-size: 0.95rem;
+      }
+      .draw-opt input,
+      .draw-opt select { font-size: 1.1rem; }
+      .btn-draw { min-height: 60px; padding-inline: 1.5rem; font-size: 1rem; }
+
+      .sidebar { gap: 14px; }
+      .panel { gap: 14px; padding: 18px; }
+      .panel-title { font-size: 1.15rem; }
+      .textarea-box {
+        height: min(15vh, 160px);
+        min-height: 96px;
+        font-size: 0.95rem;
+      }
+      .input-actions { gap: 10px; }
+      .input-actions button,
+      .file-dropzone { font-size: 0.88rem; }
+      .file-dropzone { padding: 0.75rem 0.6rem; }
+      .btn-secondary,
+      .btn-danger { padding: 0.65rem 0.8rem; font-size: 0.82rem; }
+      .winner-table { font-size: 0.95rem; }
+      .winner-table th { padding: 0.8rem; font-size: 0.85rem; }
+      .winner-table td { padding: 0.8rem; }
+    }
   </style>
 </head>
 <body>
