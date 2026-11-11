@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Undian POLTERA — Pilih Pemenang</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f1f6fc;
+      --surface: #ffffff;
+      --surface-raised: #edf3fa;
+      --surface-border: #d6e1ef;
+      --surface-hover: #e4eef9;
+      --text: #102b4b;
+      --text-muted: #405a78;
+      --primary: #14549f;
+      --primary-hover: #0e4382;
+      --accent: #14549f;
+      --danger: #b42318;
+      --gold: #e4a927;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      min-height: 88px;
+      padding: 0.65rem clamp(1.25rem, 3vw, 3rem);
+      background: var(--surface);
+      border-bottom: 1px solid rgba(16, 43, 75, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      flex: 0 0 auto;
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+    }
+
+    .brand-copy { display: grid; }
+
+    .brand-name {
+      font-size: 1.08rem;
+      font-weight: 750;
+      letter-spacing: 0.015em;
+      line-height: 1.1;
+    }
+
+    .eyebrow {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 650;
+      letter-spacing: 0.035em;
+    }
+
+    .stats {
+      display: flex;
+      gap: clamp(1rem, 2.5vw, 2.5rem);
+      align-items: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .stats > div {
+      display: grid;
+      gap: 0.22rem;
+    }
+
+    .stat-val {
+      color: var(--text);
+      font-size: 1.2rem;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(340px, 0.8fr);
+      gap: clamp(1rem, 1.6vw, 1.75rem);
+      padding: clamp(1rem, 1.8vw, 2rem) clamp(1.25rem, 3vw, 3rem);
+      max-width: 1920px;
+      margin: 0 auto;
+      width: 100%;
+      min-height: 0;
+    }
+
+    .stage {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+      gap: clamp(1.5rem, 3vh, 2.5rem);
+      background:
+        radial-gradient(ellipse at 100% 0%, rgba(228, 169, 39, 0.12), transparent 42%),
+        var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 28px;
+      padding: clamp(1.75rem, 4vw, 4rem);
+      position: relative;
+      min-height: min(720px, calc(100vh - 112px));
+      overflow: hidden;
+      box-shadow: 0 16px 48px rgba(16, 43, 75, 0.07);
+    }
+
+    .stage-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .stage-heading .eyebrow {
+      color: var(--accent);
+    }
+
+    .stage-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 650;
+    }
+
+    .stage-live::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      background: var(--primary);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(20, 84, 159, 0.14);
+    }
+
+    .ticker-viewport {
+      width: 100%;
+      min-height: clamp(330px, 44vh, 460px);
+      padding: clamp(1rem, 2vw, 1.75rem);
+      background:
+        radial-gradient(ellipse at 50% 120%, rgba(228, 169, 39, 0.14), transparent 56%),
+        #f4f8ff;
+      border: 1px solid #c8d7e9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+      box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.4);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .ticker-viewport.active {
+      border-color: var(--primary);
+      box-shadow: inset 0 0 48px rgba(20, 84, 159, 0.12);
+    }
+
+    .machine-caption,
+    .machine-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: min(680px, 100%);
+      color: #806b46;
+      font: 650 0.64rem var(--font-mono);
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .machine-caption-rule {
+      color: #a48d65;
+      font-weight: 500;
+    }
+
+    .machine-status {
+      justify-content: center;
+      min-height: 1.1rem;
+      color: #7d765f;
+      font-size: 0.62rem;
+    }
+
+    .lottery-machine {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: min(680px, 100%);
+      min-height: 0;
+    }
+
+    .machine-window {
+      position: relative;
+      width: clamp(230px, 43vw, 480px);
+      height: clamp(200px, 29vh, 310px);
+      border: 9px solid #fffefa;
+      border-radius: 50%;
+      background:
+        radial-gradient(ellipse at 46% 28%, rgba(255, 255, 255, 0.95), transparent 58%),
+        linear-gradient(160deg, #f8e7bd, #f4d99e 72%, #efd092);
+      box-shadow:
+        0 0 0 1px #d6bd86,
+        inset 0 -12px 25px rgba(167, 127, 54, 0.13),
+        0 12px 22px rgba(99, 73, 28, 0.12);
+      overflow: hidden;
+      isolation: isolate;
+      transition: box-shadow 0.2s ease;
+    }
+
+    .machine-window::before {
+      content: "";
+      position: absolute;
+      z-index: 3;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.52), transparent 23% 70%, rgba(255, 255, 255, 0.25)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 40%);
+      pointer-events: none;
+    }
+
+    .machine-window::after {
+      content: "";
+      position: absolute;
+      z-index: 4;
+      left: 18%;
+      top: 8%;
+      width: 20%;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.72);
+      transform: rotate(-24deg);
+      pointer-events: none;
+    }
+
+    .draw-orbit {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .drum-rib {
+      position: absolute;
+      z-index: 2;
+      top: -20%;
+      bottom: -20%;
+      width: 24%;
+      border: 3px solid rgba(255, 255, 255, 0.48);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .drum-rib-one { left: 14%; }
+    .drum-rib-two { left: 38%; }
+    .drum-rib-three { left: 62%; }
+
+    .draw-ball {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: clamp(48px, 4.5vw, 66px);
+      aspect-ratio: 1;
+      border: 3px solid #fffefa;
+      border-radius: 50%;
+      background: radial-gradient(circle at 34% 26%, #ffe79a 0 12%, #f4bf52 42%, #d89c28 100%);
+      color: #26342e;
+      box-shadow: 0 4px 8px rgba(91, 69, 29, 0.24), inset 0 -3px 4px rgba(91, 69, 29, 0.14);
+      font: 750 clamp(0.55rem, 0.8vw, 0.72rem) var(--font-mono);
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .draw-ball:nth-child(5n + 2) { background: radial-gradient(circle at 34% 26%, #ffc0a5 0 12%, #ed8a69 42%, #c85d44 100%); }
+    .draw-ball:nth-child(5n + 3) { background: radial-gradient(circle at 34% 26%, #d0efd0 0 12%, #8fc19b 42%, #619872 100%); }
+    .draw-ball:nth-child(5n + 4) { background: radial-gradient(circle at 34% 26%, #d0e7f7 0 12%, #90b9db 42%, #648db4 100%); }
+    .draw-ball:nth-child(5n) { background: radial-gradient(circle at 34% 26%, #f2c5d6 0 12%, #d99ab3 42%, #b87390 100%); }
+
+    .draw-ball-label {
+      display: block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: clip;
+      white-space: nowrap;
+    }
+
+    .ticker-viewport.active .machine-window {
+      animation: drumShake 3.9s cubic-bezier(0.16, 0.76, 0.35, 1) both;
+      box-shadow:
+        0 0 0 1px #d6bd86,
+        inset 0 -12px 25px rgba(167, 127, 54, 0.13),
+        0 14px 28px rgba(238, 104, 70, 0.2);
+    }
+
+    .ticker-viewport.active .draw-ball {
+      animation: ballTumble 3.9s cubic-bezier(0.16, 0.76, 0.35, 1) both;
+      animation-delay: calc(var(--ball-index) * 10ms);
+    }
+
+    .ticker-viewport.active .draw-ball-label {
+      animation: labelCounterRotate 3.9s cubic-bezier(0.16, 0.76, 0.35, 1) both;
+    }
+
+    .ticker-viewport.active .draw-ball.is-revealed {
+      border-color: #fff7da;
+      box-shadow: 0 0 0 5px rgba(238, 104, 70, 0.24), 0 5px 10px rgba(91, 69, 29, 0.22);
+    }
+
+    .machine-neck {
+      width: 70px;
+      height: 26px;
+      margin-top: -1px;
+      background: linear-gradient(90deg, #c9ab6a, #f6e5bb 28% 72%, #c9ab6a);
+      clip-path: polygon(16% 0, 84% 0, 100% 100%, 0 100%);
+    }
+
+    .machine-base {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: clamp(200px, 28vw, 300px);
+      min-height: 34px;
+      margin-top: -1px;
+      padding: 0 1rem;
+      border: 1px solid #c9ab6a;
+      background: linear-gradient(180deg, #fff5dc, #e8d2a3);
+      box-shadow: 0 5px 8px rgba(99, 73, 28, 0.12);
+      color: #775c2d;
+      font: 700 0.62rem var(--font-mono);
+      letter-spacing: 0.14em;
+    }
+
+    .machine-base-light {
+      width: 8px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 3px rgba(238, 104, 70, 0.15);
+    }
+
+    .ticker-viewport.winner {
+      border-color: var(--gold);
+      box-shadow: inset 0 0 60px rgba(244, 199, 109, 0.24);
+    }
+
+    .ticker-viewport.winner .machine-window {
+      animation: drumSettle 0.45s ease-out both;
+    }
+
+    .ticker-viewport.winner .draw-ball {
+      animation: none;
+    }
+
+    .ticker-viewport.winner .draw-ball:not(.is-selected) {
+      opacity: 0.35;
+      transition: opacity 0.25s ease;
+    }
+
+    .ticker-viewport.winner .draw-ball.is-selected {
+      z-index: 5;
+      border-color: #fff;
+      box-shadow: 0 0 0 5px rgba(238, 104, 70, 0.28), 0 7px 12px rgba(91, 69, 29, 0.25);
+      animation: winningBallDrop 0.62s cubic-bezier(0.18, 0.72, 0.25, 1) both;
+    }
+
+    .winner-display {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      min-height: 86px;
+      padding: 0.85rem clamp(1rem, 2vw, 1.5rem);
+      border: 1px solid #e6d9bb;
+      background: #ffffff;
+      box-shadow: 0 5px 16px rgba(87, 67, 33, 0.06);
+    }
+
+    .winner-medal {
+      display: grid;
+      flex: 0 0 auto;
+      place-items: center;
+      width: 52px;
+      aspect-ratio: 1;
+      border: 1px solid #e8c572;
+      border-radius: 50%;
+      background: #fff2c9;
+      color: #bd7d12;
+      font-size: 1.5rem;
+    }
+
+    .winner-medal.has-ticket {
+      font: 750 0.62rem var(--font-mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .winner-copy {
+      display: grid;
+      flex: 1;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+
+    .winner-copy .eyebrow {
+      color: #9c7a37;
+      font-size: 0.58rem;
+    }
+
+    .ticker-text {
+      font-size: clamp(1.5rem, 3.5vw, 3.25rem);
+      font-weight: 780;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      overflow-wrap: anywhere;
+    }
+
+    .winner-display.is-idle .ticker-text {
+      color: #8f968d;
+      font-size: clamp(1.1rem, 2vw, 1.5rem);
+      font-weight: 550;
+      letter-spacing: -0.02em;
+    }
+
+    .winner-display.is-drawing .winner-medal {
+      animation: medalPulse 0.65s ease-in-out infinite alternate;
+    }
+
+    .winner-display.is-revealed {
+      border-color: #e8c572;
+      background: linear-gradient(105deg, #fff5d8, #fffefa 56%);
+      animation: winnerReveal 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .winner-display.is-revealed .winner-medal {
+      color: #fffefa;
+      background: #e6ae3d;
+      border-color: #e6ae3d;
+    }
+
+    .winner-ribbon {
+      flex: 0 0 auto;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #eee3c9;
+      color: #9b8a69;
+      font: 650 0.58rem var(--font-mono);
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+
+    .stage.batch-mode {
+      gap: clamp(1rem, 2.4vh, 1.75rem);
+    }
+
+    .stage.batch-mode .ticker-viewport {
+      min-height: clamp(270px, 34vh, 350px);
+    }
+
+    .stage.batch-mode .machine-window {
+      width: clamp(260px, 38vw, 420px);
+      height: clamp(165px, 22vh, 230px);
+    }
+
+    .stage.batch-mode .lottery-machine {
+      flex: 0 1 auto;
+    }
+
+    .stage.batch-mode .winner-display {
+      min-height: 64px;
+    }
+
+    .stage.batch-mode .winner-medal {
+      width: 40px;
+      font-size: 1.2rem;
+    }
+
+    @keyframes drumShake {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      12% { transform: translateY(-8px) rotate(-1.3deg); }
+      25% { transform: translateY(6px) rotate(1deg); }
+      39% { transform: translateY(-5px) rotate(-0.8deg); }
+      54% { transform: translateY(4px) rotate(0.6deg); }
+      70% { transform: translateY(-2px) rotate(-0.3deg); }
+      86% { transform: translateY(1px) rotate(0.15deg); }
+    }
+
+    @keyframes ballTumble {
+      0%, 100% { transform: translate(-50%, -50%) rotate(0); }
+      12% { transform: translate(calc(-50% + var(--kick-x)), calc(-50% + var(--kick-y))) rotate(110deg); }
+      25% { transform: translate(calc(-50% + var(--reverse-x)), calc(-50% + var(--reverse-y))) rotate(210deg); }
+      39% { transform: translate(calc(-50% + var(--kick-x)), calc(-50% + var(--kick-y))) rotate(300deg); }
+      54% { transform: translate(calc(-50% + var(--settle-x)), calc(-50% + var(--settle-y))) rotate(370deg); }
+      70% { transform: translate(calc(-50% + var(--reverse-settle-x)), calc(-50% + var(--reverse-settle-y))) rotate(420deg); }
+      86% { transform: translate(calc(-50% + var(--settle-x)), calc(-50% + var(--settle-y))) rotate(455deg); }
+    }
+
+    @keyframes labelCounterRotate {
+      0%, 100% { transform: rotate(0); }
+      12% { transform: rotate(-110deg); }
+      25% { transform: rotate(-210deg); }
+      39% { transform: rotate(-300deg); }
+      54% { transform: rotate(-370deg); }
+      70% { transform: rotate(-420deg); }
+      86% { transform: rotate(-455deg); }
+    }
+
+    @keyframes drumSettle {
+      0% { transform: translateY(0); }
+      40% { transform: translateY(-8px); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes winningBallDrop {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      45% { transform: translate(-50%, calc(-50% + 14px)) scale(1.12); }
+      100% { transform: translate(-50%, calc(-50% + 108px)) scale(0.65); opacity: 0; }
+    }
+
+    @keyframes medalPulse {
+      from { transform: scale(0.92) rotate(-8deg); }
+      to { transform: scale(1.08) rotate(8deg); }
+    }
+
+    @keyframes winnerReveal {
+      from { opacity: 0.35; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .winners-stage-grid {
+      display: none;
+      width: 100%;
+      grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+      gap: 0.75rem;
+      max-height: min(48vh, 480px);
+      overflow-y: auto;
+      padding: 0.15rem 0.4rem 0.4rem 0.15rem;
+    }
+
+    .winner-card {
+      background: #fffdf7;
+      border: 1px solid rgba(228, 169, 39, 0.55);
+      border-radius: 18px;
+      padding: 1rem 1.15rem;
+      animation: popIn 0.3s ease-out forwards;
+    }
+
+    .winner-card .idx {
+      color: var(--gold);
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .winner-card .name {
+      font-size: clamp(1.15rem, 2vw, 1.65rem);
+      font-weight: 700;
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+
+    .draw-opt {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      min-height: 54px;
+      border-radius: 14px;
+      background: #fffdf8;
+      border: 1px solid var(--surface-border);
+      padding: 0.5rem 0.8rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .draw-opt input {
+      width: 56px;
+      background: transparent;
+      border: 0;
+      border-left: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 0.25rem 0.25rem 0.25rem 0.65rem;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .draw-opt select {
+      min-width: 76px;
+      background: #fff;
+      border: 0;
+      border-left: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 0.3rem 0.25rem 0.3rem 0.6rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .draw-opt select:focus-visible,
+    .draw-opt input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .draw-opt input:focus {
+      outline: none;
+      color: var(--accent);
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      font-weight: 600;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-draw {
+      background: var(--primary);
+      color: #fffefa;
+      min-height: 54px;
+      padding: 0.8rem 1.6rem;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-draw:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-draw:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--surface-raised);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 0.55rem 0.8rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--surface-hover);
+      border-color: #bac9b6;
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid rgba(239, 128, 106, 0.35);
+      border-radius: 10px;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.68rem;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 128, 106, 0.1);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 22px;
+      box-shadow: 0 8px 26px rgba(16, 43, 75, 0.045);
+      padding: clamp(1rem, 1.4vw, 1.4rem);
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      min-width: 0;
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      font-weight: 650;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .panel-heading {
+      display: grid;
+      gap: 0.15rem;
+    }
+
+    .panel-heading .eyebrow {
+      color: var(--accent);
+      font-size: 0.76rem;
+    }
+
+    .pool-note {
+      color: var(--text-muted);
+      font-size: 0.73rem;
+      line-height: 1.5;
+    }
+
+    .textarea-box {
+      width: 100%;
+      height: 112px;
+      background: #fffefa;
+      border: 1px solid var(--surface-border);
+      border-radius: 14px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.78rem;
+      padding: 0.8rem;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    .textarea-box:focus,
+    .draw-opt input:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .input-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .input-actions > * {
+      flex: 1;
+    }
+
+    .file-dropzone {
+      border: 1px dashed var(--surface-border);
+      border-radius: 12px;
+      padding: 0.6rem 0.5rem;
+      text-align: center;
+      background: #fffefa;
+      cursor: pointer;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .file-dropzone:hover,
+    .file-dropzone:focus-within {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .winner-list-box {
+      flex: 1;
+      min-height: 160px;
+      max-height: 340px;
+      overflow-y: auto;
+      border: 1px solid var(--surface-border);
+      border-radius: 14px;
+      background: #fffefa;
+    }
+
+    .winner-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      text-align: left;
+    }
+
+    .winner-table th {
+      background: #edf3fa;
+      padding: 0.65rem 0.75rem;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid var(--surface-border);
+    }
+
+    .winner-table td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid rgba(38, 52, 46, 0.1);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .winner-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .winner-table td:first-child {
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    @media (min-width: 1500px) and (min-height: 850px) {
+      .stage { min-height: 760px; }
+      .stage { gap: clamp(1rem, 2.4vh, 1.75rem); padding-block: clamp(1.5rem, 3vh, 2.5rem); }
+      .ticker-viewport { min-height: clamp(300px, 38vh, 400px); }
+      .machine-window { height: clamp(230px, 27vh, 290px); }
+      .textarea-box { height: 150px; }
+      .winner-list-box { max-height: 420px; }
+    }
+
+    @media (max-width: 1050px) {
+      main { grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr); }
+      .stage { padding: clamp(1.25rem, 3vw, 2.5rem); }
+      .ticker-text { font-size: clamp(2.2rem, 5vw, 4.5rem); }
+    }
+
+    @media (min-width: 801px) and (max-height: 700px) {
+      main { padding-block: 0.65rem; }
+      .stage { min-height: 0; }
+      .sidebar { gap: 0.65rem; }
+      .panel { gap: 0.6rem; padding: 0.85rem; }
+      .textarea-box { height: 90px; }
+      .winner-list-box { min-height: 120px; }
+    }
+
+    @media (max-width: 800px) {
+      header { min-height: 68px; }
+      main { grid-template-columns: 1fr; }
+      .stage { min-height: 520px; }
+      .sidebar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+      .panel { height: 100%; }
+      .winner-list-box { min-height: 220px; }
+    }
+
+    @media (max-width: 560px) {
+      header { align-items: center; padding: 0.4rem 1rem; }
+      .brand { gap: 0.65rem; }
+      .brand-logo { width: 50px; height: 50px; }
+      .brand-name { font-size: 0.86rem; }
+      .stats { gap: 0.8rem; }
+      .stats > div { font-size: 0.64rem; }
+      .stat-val { font-size: 0.9rem; }
+      main { padding: 0.85rem; gap: 0.85rem; }
+      .stage { min-height: 480px; padding: 1.2rem; gap: 1.5rem; }
+      .stage-heading { align-items: flex-start; }
+      .stage-heading .eyebrow { font-size: 0.57rem; }
+      .stage-live { font-size: 0.58rem; }
+      .ticker-viewport { min-height: 330px; padding: 0.8rem; }
+      .machine-caption { font-size: 0.53rem; }
+      .machine-window { width: min(280px, 92%); height: 190px; }
+      .stage.batch-mode .machine-window { width: min(260px, 92%); height: 165px; }
+      .stage.batch-mode .ticker-viewport { min-height: 290px; }
+      .draw-ball { width: 42px; }
+      .machine-base { width: min(200px, 80%); }
+      .machine-status { font-size: 0.55rem; }
+      .winner-display { gap: 0.65rem; min-height: 76px; padding: 0.75rem; }
+      .winner-medal { width: 40px; font-size: 1.2rem; }
+      .winner-ribbon { display: none; }
+      .ticker-text { font-size: clamp(1.3rem, 7vw, 2rem); }
+      .winner-display.is-idle .ticker-text { font-size: 1rem; }
+      .controls { align-items: stretch; }
+      .draw-opt { flex: 1; justify-content: space-between; }
+      .btn-draw { flex: 1.2; padding-inline: 0.8rem; font-size: 0.75rem; }
+      .sidebar { grid-template-columns: 1fr; }
+      .panel { height: auto; }
+      .winner-list-box { min-height: 180px; }
+      .panel-title { flex-wrap: wrap; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .ticker-viewport.active .draw-orbit { opacity: 0.35; }
+    }
+
+    .live-board {
+      display: grid;
+      align-content: center;
+      gap: clamp(0.9rem, 2vh, 1.35rem);
+      width: 100%;
+      min-height: clamp(420px, 50vh, 600px);
+      padding: clamp(1.25rem, 2.5vw, 2.75rem);
+      border: 1px solid var(--surface-border);
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 8px 26px rgba(16, 43, 75, 0.045);
+    }
+
+    .live-board-heading,
+    .shuffle-caption {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .live-board-heading .eyebrow {
+      color: #14549f;
+      font-size: 0.76rem;
+      font-weight: 750;
+    }
+    .live-board-heading strong { font-size: clamp(1rem, 1.6vw, 1.3rem); }
+
+    .draw-state {
+      flex: 0 0 auto;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #b7cde6;
+      border-radius: 999px;
+      background: #edf4fc;
+      color: #14549f;
+      font-size: 0.75rem;
+      font-weight: 750;
+    }
+
+    .live-board.is-scanning .draw-state {
+      border-color: #e4c56f;
+      background: #fff6d8;
+      color: #795600;
+    }
+
+    .name-reel {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: clamp(290px, 36vh, 440px);
+      overflow: hidden;
+      border: 1px solid #d6e1ef;
+      border-radius: 20px;
+      background: #f6f9fe;
+      isolation: isolate;
+    }
+
+    .name-reel::before,
+    .name-reel::after {
+      position: absolute;
+      z-index: 2;
+      right: 0;
+      left: 0;
+      height: 34%;
+      content: "";
+      pointer-events: none;
+    }
+
+    .name-reel::before {
+      top: 0;
+      background: linear-gradient(to bottom, #f4f8ff 0%, rgba(244, 248, 255, 0.94) 27%, rgba(244, 248, 255, 0.12) 100%);
+    }
+
+    .name-reel::after {
+      bottom: 0;
+      background: linear-gradient(to top, #f4f8ff 0%, rgba(244, 248, 255, 0.94) 27%, rgba(244, 248, 255, 0.12) 100%);
+    }
+
+    .name-reel-window {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .name-reel-window::after {
+      position: absolute;
+      z-index: 1;
+      top: 50%;
+      right: 0;
+      left: 0;
+      height: clamp(58px, 8vh, 88px);
+      border: 2px solid #e4a927;
+      border-radius: 14px;
+      background: rgba(228, 169, 39, 0.17);
+      content: "";
+      pointer-events: none;
+      transform: translateY(-50%);
+    }
+
+    .reel-track {
+      position: absolute;
+      z-index: 2;
+      top: 50%;
+      right: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      transform: translateY(-50%);
+      will-change: transform;
+    }
+
+    .reel-item {
+      display: grid;
+      flex: 0 0 clamp(58px, 8vh, 88px);
+      place-items: center;
+      width: 100%;
+      padding: 0 1.25rem;
+      color: #405a78;
+      font-size: clamp(1rem, 1.7vw, 1.4rem);
+      font-weight: 580;
+      line-height: 1.2;
+      text-align: center;
+      overflow-wrap: anywhere;
+      transition: opacity 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    }
+
+    .reel-item.is-faded { opacity: 0.78; }
+    .reel-item.is-near { opacity: 0.9; }
+
+    .reel-item.is-center {
+      color: #102b4b;
+      font-size: clamp(1.7rem, 3.5vw, 4.5rem);
+      font-weight: 780;
+      transform: scale(1.025);
+    }
+
+    .reel-name {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .reel-item.is-center .reel-name { letter-spacing: -0.035em; }
+
+    .name-reel.is-rolling .reel-item {
+      color: #24466f;
+    }
+
+    .name-reel.is-result .reel-item.is-center {
+      color: #835800;
+      animation: resultSettle 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    @keyframes resultSettle {
+      0% { opacity: 0.35; transform: scale(0.94); }
+      65% { opacity: 1; transform: scale(1.06); }
+      100% { opacity: 1; transform: scale(1.025); }
+    }
+
+    .shuffle-caption {
+      color: #405a78;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-section { display: grid; gap: 0.55rem; }
+
+    .progress-track {
+      height: 0.65rem;
+      overflow: hidden;
+      border-radius: 999px;
+      border: 1px solid #c8d7e9;
+      background: #eaf1fa;
+    }
+
+    .progress-track > span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #14549f, #e4a927);
+      transition: width 0.16s ease-out;
+    }
+
+    .progress-caption {
+      color: #405a78;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .winners-stage-grid.is-visible { display: grid; }
+    .winners-stage-grid .winner-card {
+      border-color: #e4c56f;
+      border-radius: 16px;
+      background: #fff9e5;
+      animation: none;
+    }
+    .winners-stage-grid .idx { color: #835800; }
+    .winners-stage-grid .name {
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .draw-error {
+      margin: 0;
+      padding: 0.7rem 0.8rem;
+      border: 1px solid #edb8a8;
+      background: #fff0e9;
+      color: #9e3e28;
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    @media (min-width: 1500px) and (min-height: 850px) {
+      .stage { gap: clamp(1.5rem, 3vh, 2.5rem); padding-block: clamp(2rem, 4vh, 3.5rem); }
+      .live-board { min-height: min(68vh, 720px); gap: clamp(1rem, 2.5vh, 2rem); }
+      .name-reel { min-height: min(46vh, 500px); }
+      .stage-heading .eyebrow,
+      .stage-live { font-size: 0.82rem; }
+      .draw-state { font-size: 0.78rem; }
+      .live-board-heading strong { font-size: clamp(1.35rem, 1.8vw, 2rem); }
+      .reel-item { font-size: clamp(1.35rem, 1.8vw, 2rem); }
+      .reel-item.is-center { font-size: clamp(2.2rem, 3.8vw, 4.5rem); }
+      .shuffle-caption,
+      .progress-caption { font-size: 0.9rem; }
+      .progress-track { height: 0.9rem; }
+      .btn-draw { min-height: 64px; padding-inline: 2rem; font-size: 1rem; }
+      .draw-opt { min-height: 64px; font-size: 0.92rem; }
+      .draw-opt input,
+      .draw-opt select { font-size: 1.12rem; }
+    }
+
+    @media (max-width: 1050px) {
+      .stage { min-height: 0; gap: 1.5rem; }
+      .live-board { min-height: 460px; }
+      .name-reel { min-height: 330px; }
+    }
+
+    @media (max-width: 800px) {
+      .live-board { min-height: 460px; padding: 1.5rem; }
+      .name-reel { min-height: 320px; }
+    }
+
+    @media (max-width: 560px) {
+      .stage { min-height: 0; gap: 1.1rem; }
+      .live-board { min-height: 420px; padding: 1rem; gap: 1rem; }
+      .live-board-heading strong { max-width: 220px; }
+      .name-reel { min-height: 290px; }
+      .reel-item { padding-inline: 0.65rem; }
+      .shuffle-caption, .progress-caption { font-size: 0.62rem; }
+      .draw-opt { gap: 0.35rem; padding-inline: 0.55rem; font-size: 0.68rem; }
+      .draw-opt input { width: 42px; padding-left: 0.35rem; font-size: 0.88rem; }
+      .draw-opt select { min-width: 64px; padding-left: 0.35rem; font-size: 0.78rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .name-reel.is-result .reel-item.is-center { animation: none; }
+      .progress-track > span { transition: none; }
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse at 4% 2%, rgba(20, 84, 159, 0.09), transparent 30rem),
+        radial-gradient(ellipse at 96% 95%, rgba(228, 169, 39, 0.12), transparent 32rem),
+        #f1f6fc;
+    }
+
+    header {
+      min-height: 60px;
+      height: 60px;
+      padding: 0 1.25rem;
+      border-bottom: 1px solid rgba(16, 43, 75, 0.08);
+      box-shadow: 0 3px 14px rgba(16, 43, 75, 0.04);
+    }
+
+    .brand { gap: 0.6rem; }
+    .brand-logo { width: 46px; height: 48px; }
+    .brand-name { font-size: 1rem; }
+
+    .stats { gap: 0.55rem; }
+    .stats > div {
+      grid-template-columns: auto auto;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.7rem;
+      border: 1px solid var(--surface-border);
+      border-radius: 999px;
+      background: var(--surface);
+    }
+    .stat-val { font-size: 0.95rem; }
+
+    .stage {
+      background:
+        radial-gradient(ellipse at 92% 10%, rgba(255, 255, 255, 0.22), transparent 34%),
+        radial-gradient(ellipse at 8% 100%, rgba(6, 48, 105, 0.24), transparent 42%),
+        linear-gradient(135deg, #1555a0 0%, #2475c4 58%, #14549f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 26px;
+      box-shadow: 0 18px 42px rgba(16, 65, 126, 0.2);
+    }
+
+    .stage::before,
+    .stage::after {
+      position: absolute;
+      z-index: 0;
+      display: block;
+      width: min(42vw, 560px);
+      aspect-ratio: 1;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 24px rgba(255, 255, 255, 0.045),
+        0 0 0 50px rgba(255, 255, 255, 0.035);
+      content: "";
+      pointer-events: none;
+    }
+
+    .stage::before { top: -32%; right: -12%; }
+    .stage::after { bottom: -44%; left: -18%; }
+    .stage > * { position: relative; z-index: 1; }
+
+    .stage-heading .eyebrow {
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 750;
+    }
+    .stage-live {
+      padding: 0.45rem 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.13);
+      color: #fff;
+      font-size: 0.78rem;
+    }
+    .stage-live::before {
+      background: #ffd05a;
+      box-shadow: 0 0 0 4px rgba(255, 208, 90, 0.2);
+    }
+
+    .live-board {
+      min-height: 0;
+      padding: clamp(1rem, 2vw, 1.8rem);
+      border: 1px solid rgba(255, 255, 255, 0.34);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(4px);
+    }
+    .live-board-heading strong {
+      color: #fff;
+      font-size: clamp(1.1rem, 1.55vw, 1.5rem);
+      letter-spacing: -0.02em;
+    }
+    .draw-state {
+      border-color: rgba(255, 255, 255, 0.5);
+      background: #fff;
+      color: #14549f;
+    }
+    .live-board.is-scanning .draw-state {
+      border-color: #ffe08a;
+      background: #ffe08a;
+      color: #173c70;
+    }
+
+    .name-reel {
+      min-height: 0;
+      border: 4px solid rgba(255, 255, 255, 0.92);
+      border-radius: 22px;
+      background: #f7fbff;
+      box-shadow: 0 12px 30px rgba(8, 41, 86, 0.16);
+    }
+    .name-reel::before {
+      background: linear-gradient(to bottom, #f7fbff 0%, rgba(247, 251, 255, 0.94) 27%, rgba(247, 251, 255, 0.12) 100%);
+    }
+    .name-reel::after {
+      background: linear-gradient(to top, #f7fbff 0%, rgba(247, 251, 255, 0.94) 27%, rgba(247, 251, 255, 0.12) 100%);
+    }
+    .name-reel-window::after {
+      border: 3px solid #e8ad29;
+      border-radius: 16px;
+      background: linear-gradient(90deg, rgba(255, 221, 130, 0.14), rgba(255, 221, 130, 0.3), rgba(255, 221, 130, 0.14));
+      box-shadow: 0 0 0 4px rgba(232, 173, 41, 0.12);
+    }
+    .reel-item { flex-basis: clamp(60px, 8vh, 92px); }
+    .reel-item.is-center { color: #123d72; }
+    .name-reel.is-rolling .reel-item { color: #385a80; }
+    .name-reel.is-result .reel-item.is-center { color: #805500; }
+
+    .shuffle-caption,
+    .progress-caption {
+      color: #fff;
+      font-size: 0.84rem;
+      font-weight: 650;
+    }
+    .shuffle-caption > span:last-child {
+      padding: 0.3rem 0.7rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .progress-section { gap: 0.45rem; }
+    .progress-track {
+      height: 0.55rem;
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      background: rgba(6, 48, 105, 0.28);
+    }
+    .progress-track > span { background: linear-gradient(90deg, #ffd25e, #fff0b0); }
+
+    .winners-stage-grid {
+      grid-template-columns: minmax(0, 1fr);
+      max-height: min(15vh, 150px);
+      padding: 0;
+    }
+    .winner-card {
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.45rem 0.75rem;
+      border-color: rgba(255, 213, 111, 0.8);
+      border-radius: 16px;
+      background: #fff8df;
+      box-shadow: 0 8px 20px rgba(8, 41, 86, 0.1);
+    }
+    .winners-stage-grid .idx { margin: 0; white-space: nowrap; }
+    .winners-stage-grid .name { font-size: clamp(1rem, 1.35vw, 1.35rem); }
+    .draw-error { border-radius: 12px; }
+
+    .draw-opt {
+      border-color: rgba(255, 255, 255, 0.55);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.95);
+    }
+    .btn-draw {
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ffdb70, #f3b936);
+      box-shadow: 0 6px 16px rgba(5, 40, 89, 0.2);
+      color: #153d70;
+      font-weight: 800;
+    }
+    .btn-draw:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ffe594, #ffd05a);
+    }
+    .pool-note { color: rgba(255, 255, 255, 0.86); }
+
+    .panel {
+      border-color: rgba(16, 43, 75, 0.08);
+      border-radius: 18px;
+      box-shadow: 0 10px 26px rgba(16, 43, 75, 0.06);
+    }
+    .panel-title { font-size: 0.95rem; }
+    .textarea-box { border-radius: 10px; }
+    .winner-list-box { border-radius: 10px; }
+
+    @media (min-width: 801px) and (min-height: 640px) {
+      html,
+      body { width: 100%; height: 100%; min-height: 0; }
+      body { overflow: hidden; }
+      header { flex: 0 0 60px; }
+      main {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: none;
+        height: calc(100dvh - 60px);
+        min-height: 0;
+        grid-template-columns: minmax(0, 1fr) minmax(285px, 320px);
+        align-items: stretch;
+        gap: 14px;
+        padding: 14px 18px;
+      }
+      .stage {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        align-content: stretch;
+        justify-content: initial;
+        min-height: 0;
+        gap: 12px;
+        padding: 16px clamp(18px, 2vw, 32px);
+      }
+      .live-board {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+        align-content: stretch;
+        gap: 10px;
+      }
+      .name-reel { height: 100%; }
+      .controls { flex-wrap: nowrap; gap: 10px; }
+      .draw-opt { min-height: 48px; padding: 0.4rem 0.7rem; }
+      .btn-draw { min-height: 48px; padding: 0.6rem 1.15rem; }
+      .pool-note { display: none; }
+      .sidebar {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        min-height: 0;
+        gap: 12px;
+        overflow: hidden;
+      }
+      .panel { min-height: 0; padding: 14px; gap: 10px; overflow: hidden; }
+      .textarea-box { height: min(15vh, 132px); min-height: 78px; resize: none; }
+      .winner-list-box { min-height: 0; max-height: none; }
+    }
+
+    @media (min-width: 801px) and (min-height: 640px) and (max-width: 1100px) {
+      main { grid-template-columns: minmax(0, 1fr) 270px; gap: 10px; padding-inline: 10px; }
+      .stage { padding-inline: 14px; }
+      .live-board { padding: 12px; }
+      .draw-opt { gap: 0.35rem; padding-inline: 0.5rem; font-size: 0.72rem; }
+      .btn-draw { padding-inline: 0.7rem; font-size: 0.75rem; }
+      .panel { padding: 10px; }
+      .panel-title { font-size: 0.84rem; }
+    }
+
+    @media (max-width: 800px), (max-height: 639px) {
+      body { overflow-x: hidden; overflow-y: auto; }
+      header { min-height: 56px; height: 56px; }
+      .brand-logo { width: 42px; height: 44px; }
+      .stats > div { padding: 0.28rem 0.55rem; }
+      .live-board { min-height: clamp(420px, 50vh, 600px); }
+      .name-reel { height: auto; min-height: clamp(290px, 36vh, 440px); }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <header>
+    <div class="brand">
+      <img class="brand-logo" src="poltera-logo.png" alt="Logo POLTERA">
+      <div class="brand-copy">
+        <span class="brand-name">Undian POLTERA</span>
+      </div>
+    </div>
+    <div class="stats">
+      <div><span>Sisa peserta</span><span class="stat-val" id="stat-pool">0</span></div>
+      <div><span>Pemenang</span><span class="stat-val" id="stat-winners">0</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="stage">
+      <div class="stage-heading">
+        <span class="eyebrow">Undian langsung</span>
+        <span class="stage-live">Siap mengundi</span>
+      </div>
+
+      <div class="live-board" id="live-board">
+        <div class="live-board-heading">
+          <strong id="shuffle-title">Nama peserta bergulir</strong>
+          <span class="draw-state" id="draw-state" role="status" aria-live="polite">Siap</span>
+        </div>
+
+        <div class="name-reel" id="name-reel" aria-label="Nama peserta yang sedang bergulir">
+          <div class="name-reel-window">
+            <div class="reel-track" id="reel-track" aria-live="off"></div>
+          </div>
+        </div>
+
+        <div class="shuffle-caption">
+          <span id="shuffle-step-label">Semua peserta punya peluang yang sama</span>
+          <span id="shuffle-step-count">0 pemenang</span>
+        </div>
+        <div class="progress-section">
+          <div class="progress-track" id="draw-progress" role="progressbar" aria-label="Progres pengundian" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span id="draw-progress-fill"></span>
+          </div>
+          <div class="progress-caption" id="scan-progress-text" aria-live="off">0 peserta siap ikut undian</div>
+        </div>
+
+        <div class="winners-stage-grid" id="winners-grid"></div>
+        <p class="draw-error" id="draw-error" role="alert" hidden></p>
+      </div>
+
+      <div class="controls">
+        <div class="draw-opt">
+          <label for="draw-count">Jumlah pemenang</label>
+          <input type="number" id="draw-count" min="1" max="100" value="1">
+        </div>
+        <div class="draw-opt">
+          <label for="draw-duration">Durasi tiap putaran</label>
+          <select id="draw-duration">
+            <option value="3">3 detik</option>
+            <option value="5" selected>5 detik</option>
+            <option value="8">8 detik</option>
+          </select>
+        </div>
+        <button class="btn-draw" id="btn-draw-exec">Mulai undian <span aria-hidden="true">→</span></button>
+      </div>
+
+      <p class="pool-note">Pemenang yang sudah terpilih tidak akan ikut undian berikutnya.</p>
+    </section>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="panel-title">
+          <div class="panel-heading">
+            <span>Daftar peserta</span>
+          </div>
+          <button class="btn-danger" id="btn-clear-pool">Kosongkan</button>
+        </div>
+
+        <p class="pool-note">Tambahkan satu nama atau nomor tiket di setiap baris.</p>
+        <textarea 
+          class="textarea-box" 
+          id="input-raw" 
+          placeholder="Contoh:&#10;08123456789&#10;Kupon #00123&#10;Ahmad Fauzi"></textarea>
+
+        <div class="input-actions">
+          <button class="btn-secondary" id="btn-load-text">Tambah peserta</button>
+          <label class="file-dropzone">
+            <span>Pilih berkas peserta (.CSV / .TXT)</span>
+            <input type="file" id="file-input" accept=".txt,.csv" style="display: none;">
+          </label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">
+          <div class="panel-heading">
+            <span>Riwayat pemenang</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-secondary" id="btn-export-csv">Ekspor CSV</button>
+            <button class="btn-danger" id="btn-clear-winners">Hapus riwayat</button>
+          </div>
+        </div>
+
+        <div class="winner-list-box">
+          <table class="winner-table">
+            <thead>
+              <tr>
+                <th width="48">No.</th>
+                <th>Nama / Nomor</th>
+                <th width="82">Waktu</th>
+              </tr>
+            </thead>
+            <tbody id="winner-table-body">
+              <tr>
+                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Belum ada pemenang</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    /**
+     * STATE MANAGEMENT
+     */
+    let pool = [];       // Array of { id: string, val: string }
+    let winners = [];    // Array of { id: string, val: string, time: string, drawBatch: number }
+    let isRolling = false;
+    let audioCtx = null;
+
+    // Web Audio Synthesizer for the completed draw
+    function playSound(type) {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'win') {
+          // Chord Arpeggio
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+            const chordOsc = audioCtx.createOscillator();
+            const chordGain = audioCtx.createGain();
+            chordOsc.connect(chordGain);
+            chordGain.connect(audioCtx.destination);
+
+            chordOsc.type = 'sine';
+            chordOsc.frequency.setValueAtTime(freq, now + (idx * 0.08));
+            chordGain.gain.setValueAtTime(0.15, now + (idx * 0.08));
+            chordGain.gain.exponentialRampToValueAtTime(0.001, now + (idx * 0.08) + 0.5);
+
+            chordOsc.start(now + (idx * 0.08));
+            chordOsc.stop(now + (idx * 0.08) + 0.5);
+          });
+        }
+      } catch (e) {
+        // Abaikan audio jika browser memblokir autoplay
+      }
+    }
+
+    /**
+     * CRYPTOGRAPHIC FAIRNESS ALGORITHM
+     * Rejection sampling avoids modulo bias; random words are buffered in small batches.
+     */
+    function createSecureRandomIndexGenerator() {
+      const buffer = new Uint32Array(256);
+      let offset = buffer.length;
+
+      return function getSecureRandomIndex(max) {
+        if (!Number.isSafeInteger(max) || max < 1 || max > 0x100000000) {
+          throw new RangeError('Rentang angka acak tidak valid.');
+        }
+        if (max === 1) return 0;
+
+        const limit = Math.floor(0x100000000 / max) * max;
+        while (true) {
+          if (offset >= buffer.length) {
+            window.crypto.getRandomValues(buffer);
+            offset = 0;
+          }
+          const value = buffer[offset++];
+          if (value < limit) {
+            return value % max;
+          }
+        }
+      };
+    }
+
+    /**
+     * INITIALIZATION & STORAGE
+     */
+    function init() {
+      const storedPool = localStorage.getItem('fair_draw_pool');
+      const storedWinners = localStorage.getItem('fair_draw_winners');
+
+      if (storedPool) {
+        try { pool = JSON.parse(storedPool); } catch(e) { pool = []; }
+      }
+      if (storedWinners) {
+        try { winners = JSON.parse(storedWinners); } catch(e) { winners = []; }
+      }
+
+      updateUI();
+    }
+
+    function saveState() {
+      localStorage.setItem('fair_draw_pool', JSON.stringify(pool));
+      localStorage.setItem('fair_draw_winners', JSON.stringify(winners));
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById('stat-pool').textContent = pool.length.toLocaleString('id-ID');
+      document.getElementById('stat-winners').textContent = winners.length.toLocaleString('id-ID');
+      document.getElementById('btn-draw-exec').disabled = (pool.length === 0 || isRolling);
+      document.getElementById('input-raw').disabled = isRolling;
+      document.getElementById('file-input').disabled = isRolling;
+      document.getElementById('btn-load-text').disabled = isRolling;
+      document.getElementById('btn-clear-pool').disabled = isRolling;
+      document.getElementById('btn-clear-winners').disabled = isRolling;
+      document.getElementById('draw-count').disabled = isRolling;
+      document.getElementById('draw-duration').disabled = isRolling;
+      if (document.getElementById('draw-state').textContent === 'Siap') {
+        const total = pool.length.toLocaleString('id-ID');
+        document.getElementById('scan-progress-text').textContent = `${total} peserta siap ikut undian`;
+        const requested = Math.max(1, parseInt(document.getElementById('draw-count').value, 10) || 1);
+        document.getElementById('shuffle-step-count').textContent = `${Math.min(requested, pool.length)} pemenang`;
+        renderNameReel(pool, 0, false);
+      }
+
+      renderWinnerTable();
+    }
+
+    function renderNameReel(entries, centerIndex, isResult) {
+      if (entries.length === 0) {
+        const reel = document.getElementById('name-reel');
+        const track = document.getElementById('reel-track');
+        track.replaceChildren();
+        track.style.transform = 'translateY(-50%)';
+        reel.classList.toggle('is-result', isResult);
+        const placeholder = document.createElement('span');
+        placeholder.className = 'reel-item is-center';
+        const name = document.createElement('span');
+        name.className = 'reel-name';
+        name.textContent = 'Tambahkan peserta untuk memulai';
+        placeholder.appendChild(name);
+        track.appendChild(placeholder);
+        fitSingleLineText(name);
+        return;
+      }
+
+      const visibleEntries = [];
+      for (let offset = -2; offset <= 2; offset++) {
+        const index = (centerIndex + offset + entries.length) % entries.length;
+        visibleEntries.push({ entry: entries[index], index, offset });
+      }
+      renderReelItems(visibleEntries, isResult);
+    }
+
+    function renderReelItems(entries, isResult) {
+      const reel = document.getElementById('name-reel');
+      const track = document.getElementById('reel-track');
+      track.replaceChildren();
+      track.style.transform = 'translateY(-50%)';
+      reel.classList.toggle('is-result', isResult);
+
+      for (const { entry, index, offset } of entries) {
+        const item = createReelItem(entry, index, offset);
+        track.appendChild(item);
+        fitSingleLineText(item.querySelector('.reel-name'));
+      }
+    }
+
+    function createReelItem(entry, index, offset) {
+      const item = document.createElement('span');
+      const name = document.createElement('span');
+      item.className = 'reel-item';
+      if (offset === 0) item.classList.add('is-center');
+      else if (Math.abs(offset) === 1) item.classList.add('is-near');
+      else item.classList.add('is-faded');
+      item.dataset.entryIndex = String(index);
+      name.className = 'reel-name';
+      name.textContent = entry.val;
+      item.appendChild(name);
+      return item;
+    }
+
+    function fitSingleLineText(name) {
+      name.style.fontSize = '';
+      const baseSize = parseFloat(getComputedStyle(name).fontSize);
+      if (!name.clientWidth || name.scrollWidth <= name.clientWidth) return;
+
+      let minimum = Math.min(5, baseSize);
+      let maximum = baseSize;
+      for (let attempt = 0; attempt < 14; attempt++) {
+        const candidate = (minimum + maximum) / 2;
+        name.style.fontSize = `${candidate}px`;
+        if (name.scrollWidth <= name.clientWidth) minimum = candidate;
+        else maximum = candidate;
+      }
+      name.style.fontSize = `${minimum}px`;
+    }
+
+    function fitReelNames() {
+      document.querySelectorAll('.reel-name').forEach(fitSingleLineText);
+    }
+
+    function fitWinnerNames() {
+      document.querySelectorAll('#winners-grid .name').forEach(fitSingleLineText);
+    }
+
+    function fitVisibleReelNames() {
+      fitReelNames();
+      fitWinnerNames();
+    }
+
+    window.addEventListener('resize', fitVisibleReelNames);
+
+    function setReelEmphasis(track) {
+      [...track.children].forEach((item, index) => {
+        item.classList.toggle('is-center', index === 2);
+        item.classList.toggle('is-near', Math.abs(index - 2) === 1);
+        item.classList.toggle('is-faded', Math.abs(index - 2) === 2);
+      });
+    }
+
+    document.getElementById('draw-count').addEventListener('input', updateUI);
+
+    function renderWinnerTable() {
+      const tbody = document.getElementById('winner-table-body');
+      if (winners.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Belum ada pemenang</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = winners.map((w, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td style="color:var(--text); font-weight:600;">${escapeHtml(w.val)}</td>
+          <td style="color:var(--text-muted); font-size:0.75rem;">${w.time}</td>
+        </tr>
+      `).reverse().join('');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    /**
+     * INPUT & FILE PARSING
+     */
+    function parseInputText(text) {
+      const lines = text.split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+
+      if (lines.length === 0) return;
+
+      const newEntries = lines.map(line => ({
+        id: crypto.randomUUID(),
+        val: line
+      }));
+
+      pool = pool.concat(newEntries);
+      saveState();
+    }
+
+    document.getElementById('btn-load-text').addEventListener('click', () => {
+      const val = document.getElementById('input-raw').value;
+      if (!val.trim()) return;
+      parseInputText(val);
+      document.getElementById('input-raw').value = '';
+    });
+
+    document.getElementById('file-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        parseInputText(evt.target.result);
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById('btn-clear-pool').addEventListener('click', () => {
+      if (pool.length === 0) return;
+      if (confirm(`Hapus seluruh ${pool.length} antrean peserta?`)) {
+        pool = [];
+        saveState();
+      }
+    });
+
+    document.getElementById('btn-clear-winners').addEventListener('click', () => {
+      if (winners.length === 0) return;
+      if (confirm('Kosongkan seluruh riwayat pemenang?')) {
+        winners = [];
+        saveState();
+      }
+    });
+
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      if (winners.length === 0) {
+        alert('Belum ada data pemenang untuk diekspor.');
+        return;
+      }
+
+      let csv = 'No,Pemenang,Waktu,ID\n';
+      winners.forEach((w, idx) => {
+        const safeVal = `"${w.val.replace(/"/g, '""')}"`;
+        csv += `${idx + 1},${safeVal},${w.time},${w.id}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pemenang-undian-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    /**
+     * DRAW ENGINE — choose each winner only when the visible name reel stops
+     */
+    document.getElementById('btn-draw-exec').addEventListener('click', () => {
+      const countInput = document.getElementById('draw-count');
+      let requested = Math.max(1, parseInt(countInput.value, 10) || 1);
+      if (pool.length === 0 || isRolling) return;
+      const maxWinners = Math.min(pool.length, Number(countInput.max) || pool.length);
+      if (requested > maxWinners) {
+        requested = maxWinners;
+        countInput.value = requested;
+      }
+      executeLiveDraw(requested);
+    });
+
+    function executeLiveDraw(count) {
+      const getSecureRandomIndex = createSecureRandomIndexGenerator();
+      const board = document.getElementById('live-board');
+      const grid = document.getElementById('winners-grid');
+      const state = document.getElementById('draw-state');
+      const stageStatus = document.querySelector('.stage-live');
+      const progressBar = document.getElementById('draw-progress');
+      const progressFill = document.getElementById('draw-progress-fill');
+      const progressText = document.getElementById('scan-progress-text');
+      const stepLabel = document.getElementById('shuffle-step-label');
+      const stepCount = document.getElementById('shuffle-step-count');
+      const shuffleTitle = document.getElementById('shuffle-title');
+      const errorPanel = document.getElementById('draw-error');
+      const track = document.getElementById('reel-track');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const durationSeconds = Number(document.getElementById('draw-duration').value);
+      const settleDuration = reducedMotion ? 0 : 450;
+      const spinDuration = reducedMotion ? 0 : durationSeconds * 1000 - settleDuration;
+      const remaining = pool.slice();
+      const selected = [];
+      let reelFrame = 0;
+      let rollTimeout = 0;
+      let winnerColumnLayout = '';
+
+      isRolling = true;
+      updateUI();
+      board.classList.add('is-scanning');
+      board.classList.remove('is-complete');
+      document.getElementById('name-reel').classList.add('is-rolling');
+      grid.classList.remove('is-visible');
+      grid.innerHTML = '';
+      errorPanel.hidden = true;
+      state.textContent = 'Berputar';
+      stageStatus.textContent = 'Undian berlangsung';
+      shuffleTitle.textContent = count === 1 ? 'Mengacak nama peserta' : 'Nama peserta bergulir';
+      stepLabel.textContent = 'Semua peserta punya peluang yang sama';
+      stepCount.textContent = `0 dari ${count} pemenang`;
+      progressBar.setAttribute('aria-valuenow', '0');
+      progressFill.style.width = '0%';
+      progressText.textContent = 'Undian segera dimulai';
+
+      function finishDraw(error) {
+        if (reelFrame) cancelAnimationFrame(reelFrame);
+        if (rollTimeout) clearTimeout(rollTimeout);
+        isRolling = false;
+        board.classList.remove('is-scanning');
+        document.getElementById('name-reel').classList.remove('is-rolling');
+        board.classList.toggle('is-complete', selected.length > 0);
+
+        if (selected.length > 0) {
+          const selectedIds = new Set(selected.map(entry => entry.id));
+          const time = new Date().toLocaleTimeString('id-ID', { hour12: false });
+          pool = pool.filter(entry => !selectedIds.has(entry.id));
+          selected.forEach(entry => winners.push({
+            id: entry.id,
+            val: entry.val,
+            time,
+            drawBatch: count
+          }));
+        }
+
+        const isPartial = Boolean(error) && selected.length > 0;
+        state.textContent = error ? (isPartial ? 'Terhenti' : 'Gagal') : 'Selesai';
+        stageStatus.textContent = error ? 'Undian terhenti' : 'Undian selesai';
+        shuffleTitle.textContent = error
+          ? `${selected.length} pemenang berhasil dipilih`
+          : `Undian selesai · ${selected.length} pemenang`;
+        stepLabel.textContent = error ? 'Undian tidak dapat dilanjutkan' : 'Selamat kepada para pemenang!';
+        stepCount.textContent = `${selected.length} dari ${count} pemenang`;
+        progressText.textContent = error
+          ? 'Pengundian berhenti'
+          : `${selected.length} pemenang berhasil dipilih`;
+        if (!error) {
+          progressBar.setAttribute('aria-valuenow', '100');
+          progressFill.style.width = '100%';
+        }
+
+        let stateSaved = selected.length === 0;
+        try {
+          if (selected.length > 0) saveState();
+          else updateUI();
+          stateSaved = true;
+        } catch (storageError) {
+          error = storageError;
+        }
+
+        if (error) {
+          const selectedNote = selected.length
+            ? ` ${selected.length} hasil yang sudah dipilih ${stateSaved ? 'ditampilkan dan disimpan.' : 'ditampilkan, tetapi gagal disimpan.'}`
+            : '';
+          errorPanel.textContent = `Undian dihentikan: ${error instanceof Error ? error.message : String(error)}${selectedNote}`;
+          errorPanel.hidden = false;
+          state.textContent = selected.length ? 'Terhenti' : 'Gagal';
+        } else {
+          playSound('win');
+          if (!reducedMotion) triggerConfetti();
+        }
+      }
+
+      function spinNextWinner() {
+        if (selected.length >= count || remaining.length === 0) {
+          finishDraw();
+          return;
+        }
+
+        const round = selected.length + 1;
+        let offset = 0;
+        let lastFrame = 0;
+        let spinStartedAt = 0;
+        let lastDisplayedSeconds = -1;
+        let stopping = false;
+        let stopStartedAt = 0;
+        let stopStartOffset = 0;
+        let stopTargetOffset = 0;
+        let stopAtNextItem = false;
+        let rowHeight = 72;
+
+        try {
+          document.getElementById('name-reel').classList.add('is-rolling');
+          state.textContent = 'Berputar';
+          stageStatus.textContent = count === 1 ? 'Memilih satu pemenang' : `Memilih pemenang ${round} dari ${count}`;
+          shuffleTitle.textContent = count === 1
+            ? 'Mengacak nama peserta'
+            : `Pemenang ${round} dari ${count}`;
+          stepLabel.textContent = 'Semua peserta punya peluang yang sama';
+          stepCount.textContent = `${selected.length} dari ${count} pemenang`;
+          progressText.textContent = 'Nama peserta mulai bergulir';
+          const firstRows = Array.from({ length: 5 }, (_, position) => {
+            const index = getSecureRandomIndex(remaining.length);
+            return { entry: remaining[index], index, offset: position - 2 };
+          });
+          renderReelItems(firstRows, false);
+          rowHeight = track.firstElementChild
+            ? track.firstElementChild.getBoundingClientRect().height
+            : rowHeight;
+
+          function rollFrame(timestamp) {
+            try {
+              if (!spinStartedAt) spinStartedAt = timestamp;
+              const elapsed = timestamp - spinStartedAt;
+
+              if (stopping) {
+                if (!stopStartedAt) stopStartedAt = timestamp;
+                const stopRatio = Math.min((timestamp - stopStartedAt) / settleDuration, 1);
+                const easedStop = 1 - Math.pow(1 - stopRatio, 3);
+                offset = stopStartOffset + (stopTargetOffset - stopStartOffset) * easedStop;
+
+                if (stopRatio >= 1) {
+                  if (stopAtNextItem) {
+                    track.firstElementChild.remove();
+                    const nextIndex = getSecureRandomIndex(remaining.length);
+                    track.appendChild(createReelItem(remaining[nextIndex], nextIndex, 2));
+                    setReelEmphasis(track);
+                    fitReelNames();
+                  }
+                  track.style.transform = 'translateY(-50%)';
+                  reelFrame = 0;
+                  revealWinner();
+                  return;
+                }
+              } else {
+                if (!lastFrame) lastFrame = timestamp;
+                const spinProgress = Math.min(elapsed / spinDuration, 1);
+                const speed = 0.95 - 0.8 * spinProgress;
+                offset += Math.min(timestamp - lastFrame, 50) * speed;
+                lastFrame = timestamp;
+              }
+
+              const drawProgress = Math.min(elapsed / (spinDuration + settleDuration), 1);
+              const totalProgress = Math.min(((round - 1) + drawProgress) / count, 1);
+              const progressPercent = Math.floor(totalProgress * 100);
+              progressBar.setAttribute('aria-valuenow', String(progressPercent));
+              progressFill.style.width = `${progressPercent}%`;
+              const secondsLeft = Math.ceil(Math.max(spinDuration - elapsed, 0) / 1000);
+              if (secondsLeft !== lastDisplayedSeconds) {
+                progressText.textContent = stopping
+                  ? `Putaran ${round} dari ${count} · sebentar lagi`
+                  : `Putaran ${round} dari ${count} · ${secondsLeft} detik`;
+                lastDisplayedSeconds = secondsLeft;
+              }
+
+              while (!stopping && offset >= rowHeight) {
+                offset -= rowHeight;
+                track.firstElementChild.remove();
+                const nextIndex = getSecureRandomIndex(remaining.length);
+                const nextItem = createReelItem(remaining[nextIndex], nextIndex, 2);
+                track.appendChild(nextItem);
+                setReelEmphasis(track);
+                fitReelNames();
+              }
+
+              track.style.transform = `translateY(calc(-50% - ${offset}px))`;
+              reelFrame = requestAnimationFrame(rollFrame);
+            } catch (error) {
+              finishDraw(error);
+            }
+          }
+
+          if (remaining.length > 1 && !reducedMotion) reelFrame = requestAnimationFrame(rollFrame);
+          rollTimeout = window.setTimeout(() => {
+            rollTimeout = 0;
+            if (!reelFrame || reducedMotion) {
+              revealWinner();
+              return;
+            }
+
+            stopping = true;
+            stopStartOffset = offset;
+            stopAtNextItem = offset >= rowHeight / 2;
+            stopTargetOffset = stopAtNextItem ? rowHeight : 0;
+            lastDisplayedSeconds = -1;
+          }, spinDuration);
+
+          function revealWinner() {
+            try {
+              const selectedIndex = Number(track.children[2]?.dataset.entryIndex);
+              if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= remaining.length) {
+                throw new Error('Nama yang berhenti pada reel tidak valid.');
+              }
+              const winner = remaining[selectedIndex];
+              selected.push(winner);
+              const nameReel = document.getElementById('name-reel');
+              nameReel.classList.remove('is-rolling');
+              nameReel.classList.add('is-result');
+              remaining.splice(selectedIndex, 1);
+
+              const card = document.createElement('div');
+              card.className = 'winner-card';
+              card.innerHTML = `
+                <div class="idx">Pemenang ${round}</div>
+                <div class="name">${escapeHtml(winner.val)}</div>
+              `;
+              grid.appendChild(card);
+              grid.classList.add('is-visible');
+              const columnLayout = getComputedStyle(grid).gridTemplateColumns;
+              if (columnLayout !== winnerColumnLayout) {
+                fitWinnerNames();
+                winnerColumnLayout = columnLayout;
+              } else {
+                fitSingleLineText(card.querySelector('.name'));
+              }
+              grid.scrollTop = grid.scrollHeight;
+              state.textContent = 'Terpilih';
+              stageStatus.textContent = `Pemenang ${round} terpilih`;
+              shuffleTitle.textContent = `Pemenang ${round} terpilih`;
+              stepLabel.textContent = 'Inilah pemenang putaran ini';
+              stepCount.textContent = `${round} dari ${count} pemenang`;
+              progressText.textContent = `Pemenang ${round} dari ${count} terpilih`;
+              const percentage = Math.floor((round / count) * 100);
+              progressBar.setAttribute('aria-valuenow', String(percentage));
+              progressFill.style.width = `${percentage}%`;
+
+              if (round >= count || remaining.length === 0) {
+                rollTimeout = window.setTimeout(() => finishDraw(), reducedMotion ? 0 : 900);
+              } else {
+                rollTimeout = window.setTimeout(() => spinNextWinner(), reducedMotion ? 0 : 650);
+              }
+            } catch (error) {
+              finishDraw(error);
+            }
+          }
+        } catch (error) {
+          finishDraw(error);
+        }
+      }
+
+      spinNextWinner();
+    }
+
+    /**
+     * LIGHTWEIGHT CANVAS CONFETTI ENGINE (Zero-Dependency)
+     */
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let confettiActive = false;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function triggerConfetti() {
+      particles = [];
+      const colors = ['#14549f', '#e4a927', '#3b82c4', '#f2c95e'];
+      for (let i = 0; i < 90; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height * 0.45,
+          vx: (Math.random() - 0.5) * 18,
+          vy: (Math.random() - 0.7) * 18,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10,
+          alpha: 1
+        });
+      }
+      if (!confettiActive) {
+        confettiActive = true;
+        renderConfetti();
+      }
+    }
+
+    function renderConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, index) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35; // gravitasi
+        p.vx *= 0.98; // gesekan udara
+        p.rotation += p.vRot;
+        p.alpha -= 0.008;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+
+        if (p.alpha <= 0 || p.y > canvas.height) {
+          particles.splice(index, 1);
+        }
+      });
+
+      if (particles.length > 0) {
+        requestAnimationFrame(renderConfetti);
+      } else {
+        confettiActive = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
