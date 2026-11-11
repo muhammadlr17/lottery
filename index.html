@@ -1054,6 +1054,7 @@
 
     .reel-item.is-faded { opacity: 0.78; }
     .reel-item.is-near { opacity: 0.9; }
+    .reel-item.is-duplicate { visibility: hidden; }
 
     .reel-item.is-center {
       color: #102b4b;
@@ -1816,6 +1817,7 @@
         track.appendChild(item);
         fitSingleLineText(item.querySelector('.reel-name'));
       }
+      updateReelDuplicates(track, 2);
     }
 
     function createReelItem(entry, index, offset) {
@@ -1862,6 +1864,26 @@
     }
 
     window.addEventListener('resize', fitVisibleReelNames);
+
+    function updateReelDuplicates(track, nearestIndex) {
+      const items = [...track.children];
+      const nearestByEntry = new Map();
+      items.forEach((item, index) => {
+        const entryIndex = item.dataset.entryIndex;
+        if (entryIndex === undefined) return;
+        const previous = nearestByEntry.get(entryIndex);
+        if (previous === undefined || Math.abs(index - nearestIndex) < Math.abs(previous - nearestIndex)) {
+          nearestByEntry.set(entryIndex, index);
+        }
+      });
+      items.forEach((item, index) => {
+        const entryIndex = item.dataset.entryIndex;
+        const duplicate = entryIndex !== undefined && nearestByEntry.get(entryIndex) !== index;
+        item.classList.toggle('is-duplicate', duplicate);
+        if (duplicate) item.setAttribute('aria-hidden', 'true');
+        else item.removeAttribute('aria-hidden');
+      });
+    }
 
     function setReelEmphasis(track) {
       [...track.children].forEach((item, index) => {
@@ -2101,6 +2123,7 @@
         let stopTargetOffset = 0;
         let stopAtNextItem = false;
         let rowHeight = 72;
+        let nearestIndex = 2;
 
         try {
           document.getElementById('name-reel').classList.add('is-rolling');
@@ -2141,6 +2164,7 @@
                     fitReelNames();
                   }
                   track.style.transform = 'translateY(-50%)';
+                  updateReelDuplicates(track, 2);
                   reelFrame = 0;
                   revealWinner();
                   return;
@@ -2174,8 +2198,14 @@
                 track.appendChild(nextItem);
                 setReelEmphasis(track);
                 fitReelNames();
+                nearestIndex = -1;
               }
 
+              const currentNearestIndex = offset > rowHeight / 2 ? 3 : 2;
+              if (currentNearestIndex !== nearestIndex) {
+                updateReelDuplicates(track, currentNearestIndex);
+                nearestIndex = currentNearestIndex;
+              }
               track.style.transform = `translateY(calc(-50% - ${offset}px))`;
               reelFrame = requestAnimationFrame(rollFrame);
             } catch (error) {
